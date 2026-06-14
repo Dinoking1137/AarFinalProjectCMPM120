@@ -411,7 +411,7 @@ class Platformer extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.groundLayer, (player, tile) => {
             
             if (!tile.properties) return;
-            console.log(tile.properties);
+            //console.log(tile.properties);
             if (tile.properties.isBounce && tile.properties.isKill) {
                 console.log("bounce kill");
                 handleBounceKill(player, tile);
@@ -444,7 +444,7 @@ class Platformer extends Phaser.Scene {
 
         this.physics.add.overlap(my.sprite.player, this.chargeGroup, (obj1, obj2) => {
             if (obj2.body.visible === false) return;
-            my.sprite.player.isDash = true;
+            my.sprite.player.canDash = true;
             obj2.body.visible = false;
 
             this.tweens.add({
@@ -581,7 +581,6 @@ class Platformer extends Phaser.Scene {
             }
 
             else if(aboveShell){
-                my.sprite.player.body.velocity.y = my.sprite.player.JUMP_VELOCITY * my.sprite.player.SPIN_MULTIPLIER;
                 obj2.body.setVelocityX(0);
 
                 my.sprite.player.shellJumpWindow = true;
