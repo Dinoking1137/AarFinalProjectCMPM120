@@ -58,7 +58,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         // Dash
         this.canDash = true;
         this.DASH_DIRECTIONAL_VELOCITY = 500;
-        this.DASH_DURATION = 200;
+        this.DASH_DURATION = 100;
 
         // Twirl
         this.canTwirl = true;
@@ -578,6 +578,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         const inp = this.gatherInput();
         this.canDash = false;
+        //this.body.setAllowGravity(false);
         let dx = inp.inputX;
         let dy = inp.inputY;
 
@@ -591,7 +592,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             (dy / length) * this.DASH_DIRECTIONAL_VELOCITY
         );
 
-        this.scene.time.delayedCall(200, () => {
+        this.scene.time.delayedCall(this.DASH_DURATION, () => {
             if (this.current_state === 'DASH') {
                 this.transitionTo(this.body.blocked.down ? 'IDLE' : 'FALL');
             }

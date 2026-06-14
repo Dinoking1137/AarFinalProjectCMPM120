@@ -65,7 +65,7 @@ class Platformer extends Phaser.Scene {
         // 45 tiles wide and 25 tiles tall.
         //this.map = this.add.tilemap("platformer-level-1", 18, 18, 80, 16);
 
-        this.map = this.add.tilemap("test-platformer", 16, 16, 32, 16);
+        this.map = this.add.tilemap("test-platformer", 16, 16, 64, 16);
         this.final_tileset = this.map.addTilesetImage("final_tilemap", "final_tilemap_tiles");
 
         /*
@@ -383,6 +383,10 @@ class Platformer extends Phaser.Scene {
             this.start = {x: obj2.x, y: obj2.y}; // update spawn point to current flag position
         });
 
+        const getTop = (obj) => {
+            return obj.body ? obj.body.y : obj.pixelY;
+        }
+
         const handleKill = (obj1, obj2) => {
             if(!this.canDie) return;
             my.sprite.player.setPosition(this.start.x, this.start.y);
@@ -393,7 +397,7 @@ class Platformer extends Phaser.Scene {
             if(!this.canDie) return;
 
             const playerBottom = my.sprite.player.body.y + my.sprite.player.body.height;
-            const spikeTop = obj2.body.y;
+            const spikeTop = getTop(obj2);
 
             const aboveSpike = playerBottom <= spikeTop + 4;
 
@@ -405,8 +409,13 @@ class Platformer extends Phaser.Scene {
             }
         };
 
+        const oneWay = (obj1, obj2) => {
+            return !obj2.properties.passable;
+        }
+
         this.groundLayer.setCollisionByProperty({ isKill: true });
         this.groundLayer.setCollisionByProperty({ isBounce: true });
+        this.groundLayer.setCollisionByProperty({ passable: true});
 
         this.physics.add.collider(my.sprite.player, this.groundLayer, (player, tile) => {
             
@@ -418,8 +427,14 @@ class Platformer extends Phaser.Scene {
             } else if (tile.properties.isKill) {
                 console.log("normal kill");
                 handleKill(player, tile);
+            } else if (tile.properties.IsSlippery){
+                player.setDragX(player.DRAG / 16.0);
+            } else if (tile.properties.passable) {
+                tile.setCollision(false, false, true, false);
+            } else {
+                player.setDragX(player.DRAG);
             }
-        });
+        }, oneWay);
 
         this.physics.add.overlap(my.sprite.player, this.spikeGroup, (obj1, obj2) => {
             handleBounceKill(obj1, obj2);
