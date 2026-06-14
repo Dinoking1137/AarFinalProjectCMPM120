@@ -1,4 +1,11 @@
 { "compressionlevel":-1,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"json"
+        }
+    },
  "height":16,
  "infinite":true,
  "layers":[
@@ -403,7 +410,7 @@
         {
          "columns":8,
          "firstgid":1,
-         "image":"final_project_tilemap_packed.png",
+         "image":"..\/..\/CMPM120_Final-Project\/assets\/final_project_tilemap_packed.png",
          "imageheight":160,
          "imagewidth":128,
          "margin":0,
@@ -412,6 +419,47 @@
          "tilecount":80,
          "tileheight":16,
          "tiles":[
+                {
+                 "id":8,
+                 "properties":[
+                        {
+                         "name":"isBounce",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"isKill",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":9,
+                 "properties":[
+                        {
+                         "name":"isKill",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":10,
+                 "properties":[
+                        {
+                         "name":"isKill",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
+                {
+                 "id":11,
+                 "properties":[
+                        {
+                         "name":"isKill",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
                 {
                  "animation":[
                         {
@@ -459,6 +507,15 @@
                          "tileid":44
                         }],
                  "id":36
+                }, 
+                {
+                 "id":59,
+                 "properties":[
+                        {
+                         "name":"IsSlipery",
+                         "type":"bool",
+                         "value":true
+                        }]
                 }, 
                 {
                  "animation":[

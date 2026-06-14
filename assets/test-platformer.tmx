@@ -1,10 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="32" height="16" tilewidth="16" tileheight="16" infinite="1" nextlayerid="6" nextobjectid="26">
  <editorsettings>
-  <export target="test-platformer.tmj" format="json"/>
+  <export target="../../CMPM120_Final-Project/assets/test-platformer.tmj" format="json"/>
  </editorsettings>
  <tileset firstgid="1" name="final_tilemap" tilewidth="16" tileheight="16" tilecount="80" columns="8">
-  <image source="final_project_tilemap_packed.png" width="128" height="160"/>
+  <image source="../../CMPM120_Final-Project/assets/final_project_tilemap_packed.png" width="128" height="160"/>
+  <tile id="8">
+   <properties>
+    <property name="isBounce" type="bool" value="true"/>
+    <property name="isKill" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="isKill" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="isKill" type="bool" value="true"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="isKill" type="bool" value="true"/>
+   </properties>
+  </tile>
   <tile id="33">
    <animation>
     <frame tileid="33" duration="200"/>
@@ -28,6 +49,11 @@
     <frame tileid="36" duration="200"/>
     <frame tileid="44" duration="200"/>
    </animation>
+  </tile>
+  <tile id="59">
+   <properties>
+    <property name="IsSlipery" type="bool" value="true"/>
+   </properties>
   </tile>
   <tile id="76">
    <animation>

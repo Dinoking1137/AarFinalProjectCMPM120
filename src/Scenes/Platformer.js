@@ -102,7 +102,11 @@ class Platformer extends Phaser.Scene {
         //this.groundLayer.setCollisionByProperty({
         //    collides: true
         //});
+        
+        
         this.groundLayer.setCollisionByExclusion([-1]);
+        
+        
         //this.lavaLayer.setCollisionByExclusion([-1]);
 
         // Create coins from Objects layer in tilemap
@@ -116,16 +120,16 @@ class Platformer extends Phaser.Scene {
 
         this.spawns = this.map.createFromObjects("Objects", {
             name: "spawn",
-            key: "pixel_sheet",
-            frame: 111
+            key: "final_sheet",
+            frame: 56
         });
 
         this.spawns.forEach(s => s.setDepth(0));
 
         this.spikes = this.map.createFromObjects("Objects", {
             name: "spike",
-            key: "pixel_sheet",
-            frame: 68
+            key: "final_sheet",
+            frame: 0
         });
 
         this.spikes.forEach(s => s.setDepth(2));
@@ -197,8 +201,8 @@ class Platformer extends Phaser.Scene {
 
         this.anims.create({
             key: 'spawnAnim', // Animation key
-            frames: this.anims.generateFrameNumbers('pixel_sheet', 
-                {start: 111, end: 112}
+            frames: this.anims.generateFrameNumbers('final_sheet', 
+                {start: 56, end: 57}
             ),
             duration: 250,
             //frameRate: 10,  // Higher is faster
@@ -333,9 +337,9 @@ class Platformer extends Phaser.Scene {
         this.cursors.down = this.input.keyboard.addKey('S');
 
         this.cursors.jump = this.input.keyboard.addKey('SPACE');
-        this.cursors.twirl = this.input.keyboard.addKey('PERIOD');
+        this.cursors.twirl = this.input.keyboard.addKey('M');
         this.cursors.dash = this.input.keyboard.addKey('COMMA');
-        this.cursors.grab = this.input.keyboard.addKey('E');
+        this.cursors.grab = this.input.keyboard.addKey('PERIOD');
         this.cursors.spin = this.input.keyboard.addKey('L');
 
         this.rKey = this.input.keyboard.addKey('R');
@@ -357,7 +361,7 @@ class Platformer extends Phaser.Scene {
         my.sprite.player.setDepth(1);
 
         // Enable collision handling
-        this.physics.add.collider(my.sprite.player, this.groundLayer);
+        //this.physics.add.collider(my.sprite.player, this.groundLayer);
 
         this.physics.add.overlap(my.sprite.player, this.lavaLayer, (obj1, obj2) => {
 
@@ -379,8 +383,13 @@ class Platformer extends Phaser.Scene {
             this.start = {x: obj2.x, y: obj2.y}; // update spawn point to current flag position
         });
 
-        this.physics.add.overlap(my.sprite.player, this.spikeGroup, (obj1, obj2) => {
-            
+        const handleKill = (obj1, obj2) => {
+            if(!this.canDie) return;
+            my.sprite.player.setPosition(this.start.x, this.start.y);
+            my.sprite.player.setVelocity(0,0);
+        }
+
+        const handleBounceKill = (obj1, obj2) => { 
             if(!this.canDie) return;
 
             const playerBottom = my.sprite.player.body.y + my.sprite.player.body.height;
@@ -394,12 +403,30 @@ class Platformer extends Phaser.Scene {
                 my.sprite.player.setPosition(this.start.x, this.start.y);
                 my.sprite.player.setVelocity(0,0);
             }
+        };
+
+        this.groundLayer.setCollisionByProperty({ isKill: true });
+        this.groundLayer.setCollisionByProperty({ isBounce: true });
+
+        this.physics.add.collider(my.sprite.player, this.groundLayer, (player, tile) => {
+            
+            if (!tile.properties) return;
+            console.log(tile.properties);
+            if (tile.properties.isBounce && tile.properties.isKill) {
+                console.log("bounce kill");
+                handleBounceKill(player, tile);
+            } else if (tile.properties.isKill) {
+                console.log("normal kill");
+                handleKill(player, tile);
+            }
+        });
+
+        this.physics.add.overlap(my.sprite.player, this.spikeGroup, (obj1, obj2) => {
+            handleBounceKill(obj1, obj2);
         });
 
         this.physics.add.overlap(my.sprite.player, this.superspikeGroup, (obj1, obj2) => {
-            if(!this.canDie) return;
-            my.sprite.player.setPosition(this.start.x, this.start.y);
-            my.sprite.player.setVelocity(0,0);
+            handleKill(obj1, obj2);
         });
 
         // Handle collision detection with power-ups
@@ -419,8 +446,21 @@ class Platformer extends Phaser.Scene {
             if (obj2.body.visible === false) return;
             my.sprite.player.isDash = true;
             obj2.body.visible = false;
-            this.time.delayedCall(5000, () => {
-                obj2.body.visible = true;
+
+            this.tweens.add({
+                targets: obj2,
+                alpha: 0.5,
+                duration: 500,
+                onComplete: () => {  
+                    this.time.delayedCall(2000, () => {
+                        this.tweens.add({
+                            targets: obj2,
+                            alpha: 1.0,
+                            duration: 500,
+                            onComplete: () => { obj2.body.visible = true; },
+                        });
+                    });
+                },
             });
         });
 
@@ -440,14 +480,16 @@ class Platformer extends Phaser.Scene {
             //my.sprite.player.setVelocity(,0);
         });
 
-        this.physics.add.overlap(my.sprite.player, this.gravSpringGroup, (obj1, obj2) => {
+        const omniDirectionalThrow = (obj1, obj2) => {
 
-            console.log("GRAV SPRING OVERLAP WEEEWOOO WEEEHOOO");
-            if (my.sprite.player.isGrabInteractable == false) return;
+            const isPlayer = obj1 === my.sprite.player;
 
-            if(my.sprite.player.holdingSomething && my.sprite.player.grabbedObject == obj2) return;
+            if (isPlayer){
+                if (my.sprite.player.isGrabInteractable == false) return;
+                if (my.sprite.player.holdingSomething && my.sprite.player.grabbedObject == obj2) return;
+            }
 
-            const SPRING_FORCE = 500;
+            const SPRING_FORCE = 250;
 
             let angle = Phaser.Math.DegToRad(obj2.angle - 90);
 
@@ -456,8 +498,8 @@ class Platformer extends Phaser.Scene {
 
             let springCenterX = obj2.body.x + obj2.width/2;
             let springCenterY = obj2.body.y + obj2.height/2;
-            let playerCenterX = my.sprite.player.body.x + my.sprite.player.body.width/2;
-            let playerCenterY = my.sprite.player.body.y + my.sprite.player.body.height/2;
+            let playerCenterX = obj1.body.x + obj1.body.width/2;
+            let playerCenterY = obj1.body.y + obj1.body.height/2;
 
             let dx = playerCenterX - springCenterX;
             let dy = playerCenterY - springCenterY;
@@ -469,8 +511,9 @@ class Platformer extends Phaser.Scene {
             
             let dir = dot > 0 ? 1 : -1;
 
-            my.sprite.player.body.setVelocity(dir * cos * SPRING_FORCE, dir * sin * SPRING_FORCE);
-            my.sprite.player.isDash = true;
+            obj1.body.setVelocity(dir * cos * SPRING_FORCE, dir * sin * SPRING_FORCE);
+            if (isPlayer) obj1.isDash = true;
+
             this.anims.play('gravSpringAnim', obj2);
             if (dir > 0){
                 obj2.flipX = false;
@@ -479,6 +522,14 @@ class Platformer extends Phaser.Scene {
                 obj2.flipX = true;
                 obj2.flipY = true;
             }
+        };
+
+        this.physics.add.overlap(my.sprite.player, this.gravSpringGroup, (player, gravSpring) => {
+            omniDirectionalThrow(player, gravSpring);
+        });
+
+        this.physics.add.overlap(this.shellGroup, this.gravSpringGroup, (shell, gravSpring) => {
+            omniDirectionalThrow(shell, gravSpring);
         });
 
         /*
@@ -542,7 +593,7 @@ class Platformer extends Phaser.Scene {
             }
 
             obj2.cantCollide = true;
-            this.time.delayedCall(100, () => { obj2.cantCollide = false; });
+            this.time.delayedCall(500, () => { obj2.cantCollide = false; });
         });
 
         // debug key listener (assigned to D key)
@@ -669,7 +720,7 @@ class Platformer extends Phaser.Scene {
         this.shells.forEach(shell => {
             if (shell.body.blocked.down && !shell.noGroundDrag) {
                 shell.body.setDragX(this.DRAG);
-                console.log("SHELL DRAG");
+                //console.log("SHELL DRAG");
             } else {
                 shell.body.setDragX(0);
             }
@@ -677,7 +728,7 @@ class Platformer extends Phaser.Scene {
         this.gravSprings.forEach(gSpring => {
             if (gSpring.body.blocked.down) {
                 gSpring.body.setDragX(this.DRAG);
-                console.log("GRAV SPRING DRAG");
+                //console.log("GRAV SPRING DRAG");
             } else {
                 gSpring.body.setDragX(0);
             }
